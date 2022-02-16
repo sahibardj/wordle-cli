@@ -1,44 +1,44 @@
 package algos
 
+import "git.hanabi.in/dev/wordle-cli/src/colours"
+
 type Lookup map[string]int
 
-func GetColours(ans, guess string, alphabet map[string]int) string {
-	alookup := getALookup(ans)
-	res := glookup(ans, guess, alookup, alphabet)
-	return res
-}
-
-func getALookup(ans string) Lookup {
-	alookup := make(Lookup, 0)
-	alen := len(ans)
-	for i := 0; i < alen; i++ {
-		achar := string(ans[i])
-		alookup[achar]++
+// Generate answer lookup table, and fill up with count of letters.
+func GenAnsLookup(answer string) Lookup {
+	ans_lookup := make(Lookup, 0)
+	for _, ans_elem := range answer {
+		ans_char := string(ans_elem)
+		ans_lookup[ans_char]++
 	}
-	return alookup
+	return ans_lookup
 }
 
-// Sahiba's algo
-func glookup(ans, guess string, alookup Lookup, alphabet map[string]int) string {
+// Sahiba's algo -- commit your old code sk, I will patch the refactoring later -- ac.
+// Get colours of the guess + the alphabet colouring too.
+func GetColours(answer, guess string, ans_lookup, alphabet Lookup) string {
+	// answer and guess required to check for green letters.
 	var res string
-	glookup := make(Lookup, 0)
-	glen := len(guess)
-	for i := 0; i < glen; i++ {
-		gchar := string(guess[i])
-		if alookup[gchar] == 0 {
+	guess_lookup_table := make(Lookup, 0)
+	for idx, guess_elem := range guess {
+		guess_char := string(guess_elem)
+		if ans_lookup[guess_char] == 0 { // Letter does not exist in answer, red.
 			res += "R"
-			alphabet[gchar] = -1
-		} else {
-			glookup[gchar]++
-			if glookup[gchar] <= alookup[gchar] {
-				if ans[i] == guess[i] {
+			alphabet[guess_char] = colours.Code_red
+		} else { // If letter exists.
+			guess_lookup_table[guess_char]++
+			if guess_lookup_table[guess_char] <= ans_lookup[guess_char] {
+				if answer[idx] == guess[idx] {
 					res += "G"
-					alphabet[gchar] = 1
+					alphabet[guess_char] = colours.Code_green
 				} else {
 					res += "Y"
-					alphabet[gchar] = 0
+					if alphabet[guess_char] == colours.Code_grey { // Don't overwrite a Green alphabet with Yellow.
+						alphabet[guess_char] = colours.Code_yellow
+					}
 				}
-			} else {
+			} else { // Extra repeating characters.
+				// alphabet colour would have been at least yellow, because it matched already, so don't edit.
 				res += "R"
 			}
 		}
