@@ -1,0 +1,82 @@
+                       _ _     
+__      _____  _ __ __| | | ___ 
+\ \ /\ / / _ \| '__/ _` | |/ _ \
+ \ V  V / (_) | | | (_| | |  __/
+  \_/\_/ \___/|_|  \__,_|_|\___|
+
+================================
+
+golang implementation of wordle <https://en.wikipedia.org/wiki/Wordle> in
+command-line.
+
+Build and play
+==============
+Assuming you have golang compiler, run the following commands:
+
+$ git clone http://git.hanabi.in/repos/wordle-cli.git
+$ cd wordle-cli
+$ make # or, `go build -o wordle src/main.go`
+$ ./wordle
+
+I have moved the binary to /usr/local/bin so I can play directly -- depending on
+your $PATH, consider moving the binary there.
+Alternatively, run `make install`.
+
+Caveats
+=======
+
+This game makes use of English words.
+Consider editing the src/data/words.go -- and add a sorted list of words in the
+language you want to port this game to.
+
+While golang code can be compiled on UNIX-like OS (GNU/Linux and macos), as well
+is windows, this game makes use of ANSI-colour codes to print colours in the
+terminal.
+ANSI colour-codes *might* not work on Windows, and without the colours, it could
+be impossible to play this game.  (And now that I think of, if one is
+colour-blind, they too might have a hard time playing this game.  Sorry!)
+
+Source code
+===========
+The source code uses git for version control.
+
+Get the source code by running:
+$ git clone http://git.hanabi.in/repos/wordle-cli.git
+
+The source code has three branches dev, prod and master.
++ dev: new features are added committed to dev.
++ prod: branch refers to the code ready to be used for production.
++ master -- git.hanabi.in makes use of stagit
+  <https://codemadness.org/stagit.html>.  Stagit requires a master branch to
+  generate web-front-end, and hence, the branch exists.
+
+Additionally, the source code also has few tags.
++ One tag is called sahiba (the one who came up with the algo to get the clours)
+-- tag named as a tribute for helping me with the game.
++ Other tags being semantic versioning (semver) of the software release.
+
+I don't plan to add support for words of other languages -- however, replace the
+array in src/data/words.go -- and add a sorted list of words of the language you
+wish to support/play.
+
+Please email patches to <me+git@hanabi.in>.
+
+Authors
+=======
++ acagastya (Implementation of the stuff -- which anyone can do.)
++ sahiba (Designed the algo to get the colour code in O(n) -- the heart of this
+  game -- yet she thinks she did nothing -- much better than my shitty algo
+  which took like O(mn) and still didn't work -- thanks for that sexy algo,
+  ¡muchas gracias, amiga!)
++ murtaza (Helped with debugging the colour-keyboard bug!  Somehow, even
+  without looking at the source code even once, he knew where the error was
+  located!)
+
+`git blame` should suffice (except for murtaz's help.)
+
+License
+=======
+
+This source code is licened under the GNU AGPLv3 license.  Read the LICENSE file
+to see what you can do with it, or read
+<https://www.gnu.org/licenses/agpl-3.0.en.html>
