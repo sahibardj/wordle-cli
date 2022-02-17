@@ -1,4 +1,4 @@
-package utils
+package gameplay
 
 import (
 	"fmt"
@@ -8,6 +8,11 @@ import (
 	"git.hanabi.in/dev/wordle-cli/src/algos"
 	"git.hanabi.in/dev/wordle-cli/src/colours"
 	"git.hanabi.in/dev/wordle-cli/src/data"
+)
+
+const (
+	chances   = 6
+	word_size = 5
 )
 
 // From a pre-defined sorted list of words, pick a random word which is the answer.
@@ -22,7 +27,7 @@ func SelectAnswer() string {
 }
 
 // Create a lookup table for alphabet, initialise them to grey colour.
-func InitAlphabetTable() algos.Lookup {
+func initAlphabetTable() algos.Lookup {
 	var alphabet_table = make(algos.Lookup, 0)
 	letters := "abcdefghijklmnopqrstuvwxyz"
 	for _, elem := range letters {
@@ -33,12 +38,12 @@ func InitAlphabetTable() algos.Lookup {
 }
 
 // Check if the word is of the size of answer.  Returns true if size mismatch.
-func IsWrongGuessSize(guess string, word_size int) bool {
+func isWrongGuessSize(guess string) bool {
 	return len(guess) != word_size
 }
 
 // Get user input for the guess, and process it (lower case)
-func FetchGuess() string {
+func fetchGuess() string {
 	var guess string
 	fmt.Scanf("%s", &guess)
 	guess = strings.ToLower(guess)
@@ -46,33 +51,43 @@ func FetchGuess() string {
 }
 
 // Check if guessed word is not in the list of possible words.  Returns true if not found.
-func IsNotValidWord(guess string) bool {
+func isNotValidWord(guess string) bool {
 	idx := algos.BinarySearch(data.Words, guess)
 	return idx == -1
 }
 
 // returns either a valid guess, XOR an error.
-func GetValidGuess(word_size int) (string, error) {
-	guess := FetchGuess()
-	if IsWrongGuessSize(guess, word_size) {
-		error_msg := fmt.Errorf("Word should be of length %d.\n", word_size)
-		return guess, error_msg
+func getValidGuess(prev_guesses []string) (string, error) {
+	guess := fetchGuess()
+	var error_msg error = nil
+	if isWrongGuessSize(guess) {
+		error_msg = fmt.Errorf("Word should be of length %d.\n", word_size)
+	} else if isNotValidWord(guess) {
+		error_msg = fmt.Errorf("Not a valid word.\n")
+	} else if isOldGuess(guess, prev_guesses) {
+		error_msg = fmt.Errorf("You already guessed this word.\n")
 	}
-	if IsNotValidWord(guess) {
-		error_msg := fmt.Errorf("Not a valid word.\n")
-		return guess, error_msg
+	return guess, error_msg
+}
+
+// Check if the current guess was already guessed or not.
+func isOldGuess(guess string, prev_guesses []string) bool {
+	for _, elem := range prev_guesses {
+		if elem == guess {
+			return true
+		}
 	}
-	return guess, nil
+	return false
 }
 
 // Print the guess prompt.
-func GuessPrompt(chance int) {
+func guessPrompt(chance int) {
 	msg := colours.Bold(fmt.Sprintf("Guess #%d?: ", chance))
 	fmt.Print(msg)
 }
 
 // Look at colour_string (Y,G,R) and print the characters of word in colour.
-func PrintColouredGuess(colour_string, word string) {
+func printColouredGuess(colour_string, word string) {
 	for idx, word_elem := range word {
 		col_str_char := string(colour_string[idx])
 		word_char := string(word_elem)
@@ -88,7 +103,7 @@ func PrintColouredGuess(colour_string, word string) {
 }
 
 // Print coloured alphabet for aiding which words to guess.
-func PrintColouredAlpha(alphabet algos.Lookup) {
+func printColouredAlpha(alphabet algos.Lookup) {
 	kbd_rows := []string{"qwertyuiop", "asdfghjkl", "zxcvbnm"} // keyboard layout printing.
 	for _, kbd_row := range kbd_rows {
 		for _, kbd_key := range kbd_row {
@@ -111,7 +126,7 @@ func PrintColouredAlpha(alphabet algos.Lookup) {
 }
 
 // Print share emoji.
-func PrintShare(guesses []string) {
+func printShare(guesses []string) {
 	if shouldPrintShareEmojis() {
 		fmt.Println()
 		for _, row := range guesses {
@@ -139,4 +154,42 @@ func shouldPrintShareEmojis() bool {
 		return true
 	}
 	return false
+}
+
+func StartGuessing(answer string) []string {
+
+	var alphabet = initAlphabetTable()
+	var anslookup = algos.GenAnsLookup(answer)
+	var prev_guesses = []string{}
+	var colouredChoices = []string{}
+	fmt.Printf("Guess a %d-letter word.  You have %d tries.\n", word_size, chances)
+
+	for cur_chance := 1; cur_chance <= chances; {
+		guessPrompt(cur_chance)
+		guess, err := getValidGuess(prev_guesses)
+		if err != nil {
+			fmt.Printf("%v", err)
+		} else {
+			cur_chance++
+			prev_guesses = append(prev_guesses, guess)
+			if guess != answer {
+				colour_string := algos.GetColours(answer, guess, anslookup, alphabet)
+				colouredChoices = append(colouredChoices, colour_string)
+				printColouredGuess(colour_string, guess)
+			} else if guess == answer {
+				colour_string := "GGGGG" // If the answer was correct, GetColours is not called, hence hard-coding.
+				colouredChoices = append(colouredChoices, colour_string)
+				fmt.Println("Correct guess!")
+				break
+			}
+		}
+		printColouredAlpha(alphabet)
+	}
+	return colouredChoices
+}
+
+// Handle end of the game once correct answer is reached, or when all chances are over.
+func GracefullyFinishGame(answer string, guesses []string) {
+	fmt.Printf("Answer was: %s.\n", answer)
+	printShare(guesses)
 }
