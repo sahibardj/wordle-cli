@@ -22,10 +22,12 @@ func BinarySearch(arr []string, val string) int {
 		mid := (low + high) >> 1
 		if arr[mid] == val {
 			return mid
-		} else if arr[mid] > val {
-			high = mid - 1
 		} else {
-			low = mid + 1
+			if arr[mid] > val {
+				high = mid - 1
+			} else {
+				low = mid + 1
+			}
 		}
 	}
 	return -1

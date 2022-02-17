@@ -26,26 +26,25 @@ func startGuessing(answer string) []string {
 	var colouredChoices = []string{}
 	fmt.Printf("Guess a %d-letter word.  You have %d tries.\n", word_size, chances)
 
-	for i := 0; i < chances; i++ { // not range, because i is being modified.
-		utils.GuessPrompt(i + 1) // 1-based indexing
+	for cur_chance := 1; cur_chance <= chances; {
+		utils.GuessPrompt(cur_chance)
 		guess, err := utils.GetValidGuess(word_size)
 		if err != nil {
-			i-- // Invalid input, reset current chance counter
 			fmt.Printf("%v", err)
-			continue
+		} else {
+			cur_chance++
+			if guess != answer {
+				colour_string := algos.GetColours(answer, guess, anslookup, alphabet)
+				colouredChoices = append(colouredChoices, colour_string)
+				utils.PrintColouredGuess(colour_string, guess)
+			} else if guess == answer {
+				colour_string := "GGGGG" // If the answer was correct, GetColours is not called, hence hard-coding.
+				colouredChoices = append(colouredChoices, colour_string)
+				fmt.Println("Correct guess!")
+				break
+			}
 		}
-		if guess != answer {
-			colour_string := algos.GetColours(answer, guess, anslookup, alphabet)
-			colouredChoices = append(colouredChoices, colour_string)
-			utils.PrintColouredGuess(colour_string, guess)
-			utils.PrintColouredAlpha(alphabet)
-		}
-		if guess == answer {
-			colour_string := "GGGGG" // If the answer was correct, GetColours is not called, hence hard-coding.
-			colouredChoices = append(colouredChoices, colour_string)
-			fmt.Println("Correct guess!")
-			return colouredChoices
-		}
+		utils.PrintColouredAlpha(alphabet)
 	}
 	return colouredChoices
 }
