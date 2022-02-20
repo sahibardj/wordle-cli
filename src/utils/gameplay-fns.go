@@ -18,7 +18,7 @@ const (
 // From a pre-defined sorted list of words, pick a random word which is the answer.
 func SelectAnswer() string {
 	words := []string{}
-	for _, elem := range data.Words {
+	for _, elem := range data.Answers {
 		words = append(words, elem)
 	}
 	algos.Shuffle(words)
@@ -52,8 +52,9 @@ func fetchGuess() string {
 
 // Check if guessed word is not in the list of possible words.  Returns true if not found.
 func isNotValidWord(guess string) bool {
-	idx := algos.BinarySearch(data.Words, guess)
-	return idx == -1
+	idx1 := algos.BinarySearch(data.Answers, guess)
+	idx2 := algos.BinarySearch(data.Guesses, guess)
+	return idx1 == -1 && idx2 == -1
 }
 
 // returns either a valid guess, XOR an error.
