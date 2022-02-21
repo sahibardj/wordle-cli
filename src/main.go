@@ -6,6 +6,6 @@ import (
 
 func main() {
 	answer := gameplay.SelectAnswer()
-	guesses := gameplay.StartGuessing(answer)
-	gameplay.GracefullyFinishGame(answer, guesses)
+	guesses, didWin := gameplay.StartGuessing(answer)
+	gameplay.GracefullyFinishGame(answer, guesses, didWin)
 }

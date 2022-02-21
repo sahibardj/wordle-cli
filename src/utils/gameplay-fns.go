@@ -157,12 +157,14 @@ func shouldPrintShareEmojis() bool {
 	return false
 }
 
-func StartGuessing(answer string) []string {
+// The guessing function, returns guess history and if the user won the game.
+func StartGuessing(answer string) ([]string, bool) {
 
 	var alphabet = initAlphabetTable()
 	var anslookup = algos.GenAnsLookup(answer)
 	var prev_guesses = []string{}
 	var colouredChoices = []string{}
+	didWin := false
 	fmt.Printf("Guess a %d-letter word.  You have %d tries.\n", word_size, chances)
 
 	for cur_chance := 1; cur_chance <= chances; {
@@ -173,24 +175,23 @@ func StartGuessing(answer string) []string {
 		} else {
 			cur_chance++
 			prev_guesses = append(prev_guesses, guess)
-			if guess != answer {
-				colour_string := algos.GetColours(answer, guess, anslookup, alphabet)
-				colouredChoices = append(colouredChoices, colour_string)
-				printColouredGuess(colour_string, guess)
-			} else if guess == answer {
-				colour_string := "GGGGG" // If the answer was correct, GetColours is not called, hence hard-coding.
-				colouredChoices = append(colouredChoices, colour_string)
-				fmt.Println("Correct guess!")
+			colour_string := algos.GetColours(answer, guess, anslookup, alphabet)
+			colouredChoices = append(colouredChoices, colour_string)
+			printColouredGuess(colour_string, guess)
+			if guess == answer {
+				didWin = true
 				break
 			}
 		}
 		printColouredAlpha(alphabet)
 	}
-	return colouredChoices
+	return colouredChoices, didWin
 }
 
 // Handle end of the game once correct answer is reached, or when all chances are over.
-func GracefullyFinishGame(answer string, guesses []string) {
-	fmt.Printf("Answer was: %s.\n", answer)
+func GracefullyFinishGame(answer string, guesses []string, didWin bool) {
+	if !didWin {
+		fmt.Printf("Answer was: %s.\n", answer)
+	}
 	printShare(guesses)
 }
