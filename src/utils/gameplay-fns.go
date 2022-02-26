@@ -146,6 +146,17 @@ func printShare(guesses []string) {
 	}
 }
 
+// Prompt if the answer should be printed.
+func shouldPrintAnswer() bool {
+	var ans string
+	fmt.Print(colours.Bold("Show answer?[yN]: "))
+	fmt.Scanf("%s", &ans)
+	if ans == "Y" || ans == "y" {
+		return true
+	}
+	return false
+}
+
 // Prompt if the share emojies be printed.
 func shouldPrintShareEmojis() bool {
 	var ans string
@@ -190,7 +201,7 @@ func StartGuessing(answer string) ([]string, bool) {
 
 // Handle end of the game once correct answer is reached, or when all chances are over.
 func GracefullyFinishGame(answer string, guesses []string, didWin bool) {
-	if !didWin {
+	if !didWin && shouldPrintAnswer() {
 		fmt.Printf("Answer was: %s.\n", answer)
 	}
 	printShare(guesses)
